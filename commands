@@ -1,0 +1,28 @@
+# mount usb device
+
+sudo pmount -w -u 000 /dev/sda1
+
+
+
+# DD
+sudo dd if=/dev/mmcblk0 of=[mount point]/myimg.img bs=1M
+
+# DD progress
+
+Determine the process-id (pid) for the running dd command:
+$ pgrep -l '^dd$'
+This will output the pid and binary name e.g. 2188 dd
+Send the USR1 signal to the pid:
+$ kill -USR1 2188
+When dd picks up the USR1 signal it will print the current statistics to STDERR on the original terminal and continue.
+Switch to the terminal running dd and view the output:
+e.g.
+12698193+0 records in
+12698193+0 records out
+54735860224 bytes (55 GB) copied, 4529.87 seconds, 12.1 MB/s
+Use the 'watch' command to execute the USR1 kill every minute:
+$ watch -n 60 kill -USR1 2188
+Kill the watch when the copy has completed with CTRL-C
+
+#pishrink
+use -z for compressing
