@@ -32,10 +32,13 @@ class ShellController:
     def ddExec(self, command):
         try:
             process = subprocess.Popen(command, stderr=subprocess.PIPE)
+            self.status="dd-copy"
             line = ''
             while True:
                 out = process.stderr.read(1)
+                # print(type(out))
                 if out == '' and process.poll() != None:
+                    print("ending here")
                     break
                 if out != '':
                     s = out.decode("utf-8")
@@ -44,11 +47,58 @@ class ShellController:
                         line = ''
                     else:
                         line = line + s
-                    
+                if out == b'':
+                    print("wtf",out.decode('utf-8'))
+                    break
+
         except Exception as e:
             print(str(e))
             return "error"
     
+    def commandExec(self, command):
+        try:
+            out = subprocess.check_output(command, shell=True)
+            return out.decode().rstrip("\n")
+        except:
+            return "error"
+    
+    def execute(self, cmd):
+        popen = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True)
+        for stdout_line in iter(popen.stdout.readline, ""):
+            yield stdout_line 
+        popen.stdout.close()
+        return_code = popen.wait()
+        if return_code:
+            raise subprocess.CalledProcessError(return_code, cmd)
+
+
+    def PishrinkExec(self, command):
+        try:
+            process = subprocess.Popen(command, stderr=subprocess.PIPE)
+            self.status="pishrink"
+            line = ''
+            while True:
+                out = process.stderr.read(1)
+                # print(type(out))
+                if out == '' and process.poll() != None:
+                    print("ending here")
+                    break
+                if out != '':
+                    s = out.decode("utf-8")
+                    if s == '\r':
+                        print("pishrink", line)
+                        line = ''
+                    else:
+                        line = line + s
+                if out == b'':
+                    print("wtf",out.decode('utf-8'))
+                    break
+
+        except Exception as e:
+            print(str(e))
+            return "error"
+
+
     def USBDeviceList(self):
         devices = {}
         for device in self.udev_context.list_devices():
@@ -58,19 +108,24 @@ class ShellController:
         return devices
 
     def MakeSDImage(self, sd_card, output, bs="1M"):
-        # cmd = "sudo dd if={} of={} bs={} status=progress".format(sd_card, output, bs)
         cmd = ["sudo", "dd", "if={}".format(sd_card), "of={}".format(output), "bs={}".format(bs), "status=progress"]
-        print(cmd)
         self.ddExec(cmd)
 
 
-    def PiShrink(self, file, zip=True):
+    def PiShrink(self, file, zip=True, reset=True):
+        cmd = ['pishrink.sh']
         if(zip):
-            cmd = "sudo pishrink.sh -z {}".format(file)
-        else:
-            cmd = "sudo pishrink.sh {}".format(file)
+            cmd.append("-a")
+            cmd.append("-z")
+        if(reset):
+            cmd.append("-p")
 
-        self.commandExec(cmd)
+        cmd.append("-v")
+        cmd.append(file)
+
+        for out in self.execute(cmd):
+            print("test", out, end="")
+
         # Thread(target=self.commandExec, args=(cmd,)).start()
     
     def mountMassStorage(self, device, location):
@@ -80,9 +135,11 @@ class ShellController:
 if __name__ == "__main__":
     sc = ShellController()
     # 21404581888 bytes (21 GB, 20 GiB) copied, 726 s, 29.5 MB/s
-    sc.formatDDOutput("21404581888 bytes (21 GB, 20 GiB) copied, 726 s, 29.5 MB/s")
+    # sc.formatDDOutput("21404581888 bytes (21 GB, 20 GiB) copied, 726 s, 29.5 MB/s")
 
-    sc.MakeSDImage("/dev/sda", "python.img")
+    # sc.MakeSDImage("/dev/sda", "python.img")
+    
+    sc.PiShrink('python_back.img', zip=True)
 
     # res = sc.USBDeviceList()
     # print(res.keys())
