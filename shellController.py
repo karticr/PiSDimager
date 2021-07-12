@@ -8,7 +8,8 @@ from subprocess import Popen, PIPE, CalledProcessError
 class ShellController:
     def __init__(self):
         self.udev_context = pyudev.Context()
-        self.usb_mnt_dir  = "/media/pisd_imager"
+        self.local_dir    = "/home/ubuntu/PiSDimager/static/images"
+        self.usb_mnt_dir  = "/media/pisdImager/"
         self.dd_prog_msg  = {}
         self.status       = ""
 
