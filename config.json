@@ -1,0 +1,6 @@
+{
+    "input":"/dev/sdg",
+    "output":"Local Storage",
+    "zip": true,
+    "reset": true
+}
