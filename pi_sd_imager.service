@@ -1,0 +1,15 @@
+[Unit]
+Description=Pi sd imager
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+WorkingDirectory=/home/kriss/PiSDimager
+ExecStart=/usr/bin/env python3 app.py
+
+[Install]
+WantedBy=multi-user.target
