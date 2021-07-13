@@ -1,0 +1,54 @@
+<body>
+    <div class="card" >
+        <div class="card-body">
+          <h5 class="card-title">Pi Sd Imager</h5>
+          
+          <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="img_name">
+            <label for="img_name">Image Name</label>
+          </div>
+
+
+          <div class="form-floating mb-3">
+              <select class="form-select" id="sd_select">
+                {% for sd in sd_card_list %}
+                    <option value="{{sd}}">{{sd}} ({{sd_card_list[sd]['model']}})</option>
+                {% endfor %}
+              </select>
+                  
+              <label for="sd_select">Select Sd Card</label>
+          </div>
+
+          <div class="form-floating mb-3">
+            <select class="form-select" id="output_select">
+                <option value="google drive">google drive</option>
+                <option value="Local Storage">Local Storage</option>
+                <option value="mass storage options">mass storage options</option>
+            </select>
+            <label for="output_select">output Location</label>
+          </div>
+          <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="stat_label" readonly value="">
+            <label for="stat_label">Status</label>
+          </div>
+          <div class="form-floating mb-3" id="form-txt-area">
+                <textarea class="form-control" id="term_out"  readonly></textarea>
+                <label for="term_out">Output</label>
+          </div>
+
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="zip_img">
+            <label class="form-check-label" for="zip_img">Zip the image</label>
+          </div>
+
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="reset_img">
+            <label class="form-check-label" for="reset_img">Reset image settings</label>
+          </div>
+
+
+
+          <button type="button" class="btn btn-success make_img">Make Image</button>
+        </div>
+      </div>
+</body>

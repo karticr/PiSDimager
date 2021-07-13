@@ -1,0 +1,18 @@
+.card{
+    width: 100%;
+    font-family:Roboto-Regular;
+}
+
+.make_img{
+    width: 100%;
+}
+
+#term_out{
+    height: 300px;
+}
+
+#term_out textarea.form-control{
+    padding-top: 32px; /* height of pseudo element */
+    min-height: 80px; /* not relevant */
+}
+
