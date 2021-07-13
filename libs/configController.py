@@ -13,7 +13,7 @@ class ConfigController:
             data = json.load(f)
         return data
 
-    def updateConfig(self, key, word):
+    def updateConfig(self, key, value):
         data = self.loadConfigFromFile()
-        data['key'] = word
-        updateConfigToFile(data)
+        data[key] = value
+        self.updateConfigToFile(data)

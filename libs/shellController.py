@@ -133,9 +133,11 @@ class ShellController:
         self.dd_prog_msg = "image zipped"
 
     def ImageProcessor(self, sd_card, img_name, tozip=True, reset=True):
-        self.MakeSDImage(sd_card, self.local_dir+img_name)
+        img_dir = self.local_dir+img_name
+        print("image name", img_dir)
+        self.MakeSDImage(sd_card, img_dir)
         self.status = "Pi shrink"
-        self.PiShrink(self.local_dir+img_name, tozip, reset)
+        self.PiShrink(img_dir, tozip, reset)
         self.status = "Image Ready"
         self.dd_prog_msg = "process complete"
         self.dd_prog_msg = ""

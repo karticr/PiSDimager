@@ -2,8 +2,6 @@ status_elem = document.getElementById("stat_label")
 output_elem = document.getElementById("term_out")
 
 $( document ).ready(function() {
-    console.log(server_config)
-
     populatePage();
 
     StatUpdater();
@@ -12,9 +10,75 @@ $( document ).ready(function() {
     }, 1000);
 
     $("#sd_select").change(function(){
-        console.log($("#sd_select").val())
+        val = $("#sd_select").val()
+        data = {
+            "key" : "input",
+            "value": val
+        }
+        updateConf(data)
     })
+
+    $('#zip_img').on('change', function() {
+        var val = this.checked
+        data = {
+            "key" : "zip",
+            "value": val
+        }
+        updateConf(data)
+    });
+
+    $('#reset_img').on('change', function() {
+        var val = this.checked 
+        data = {
+            "key" : "reset",
+            "value": val
+        }
+        updateConf(data)
+    });
+
+    $("#make_img").on('click', function(){
+        MakeImage()
+    })
+
 });
+
+function MakeImage(){
+    img_name = $('#img_name').val();
+
+    if(img_name == ""){
+        msg = "image name is empty"
+        alert(msg)
+        if (confirm('Are you sure you want to continue with default name')) {
+            PostRqMakeImage("empty")
+          } else {
+            console.log('cancel');
+        }
+    }
+    else{
+        if (confirm('Are you sure you want to make the image with selected config')) {
+            PostRqMakeImage(img_name)
+          } else {
+
+            console.log('cancel');
+          }
+    }
+}
+
+function PostRqMakeImage(img_name){
+    data = {"img_name":img_name}
+    $.ajax({
+        url: "/api/make_img",
+        type: 'POST',
+        dataType: 'json',
+        contentType: 'application/json',
+        data:JSON.stringify(data),
+        success: function(res) {
+            console.log(res)
+            $("#term_out").val("");
+        }
+    });
+
+}
 
 function populatePage(){
     sd_card = server_config['input']
@@ -30,7 +94,7 @@ function populatePage(){
 
 function StatUpdater(){
     $.ajax({
-        url: "/msgs",
+        url: "/api/server_stats",
         type: 'GET',
         dataType: 'json',
         contentType: 'application/json',
@@ -53,10 +117,23 @@ function StatUpdater(){
                
             if(prog != "" ){
                 $("#term_out").val(old_term_full+ prog).scrollBottom()
-                console.log(prog)
+                // console.log(prog)
             }
             
 
+        }
+    });
+}
+
+function updateConf(data){
+    $.ajax({
+        url: "/api/update_conf",
+        type: 'POST',
+        dataType: 'json',
+        contentType: 'application/json',
+        data:JSON.stringify(data),
+        success: function(res) {
+            console.log(res)
         }
     });
 }

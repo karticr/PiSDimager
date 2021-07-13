@@ -5,6 +5,7 @@ from libs.shellController import ShellController
 from libs.configController import ConfigController
 
 from routes.home_page import home_page
+from routes.api_access import api
 
 sc   = ShellController()
 conf = ConfigController()
@@ -12,6 +13,7 @@ conf = ConfigController()
 
 app = Flask(__name__)
 app.register_blueprint(home_page)
+app.register_blueprint(api)
 
 app.conf = conf
 app.sc   = sc
