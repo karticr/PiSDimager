@@ -10,7 +10,7 @@ class ShellController:
         self.udev_context = pyudev.Context()
         self.local_dir    = "/mnt/drive1/pisd_images/"
         self.usb_mnt_dir  = "/media/pisdImager/"
-        self.dd_prog_msg  = {}
+        self.dd_prog_msg  = ""
         self.status       = ""
 
     def formatDDOutput(self, msg):
@@ -24,7 +24,7 @@ class ShellController:
             data = {
                 "data_in_bytes": data_in_bytes,
                 "data_moved"   : data_moved,
-                "time_elapsed"  : float(time_elapsed),
+                "time_elapsed" : float(time_elapsed),
                 "speed"        : speed
             }
             print(data)
@@ -44,7 +44,8 @@ class ShellController:
                 if out != '':
                     s = out.decode("utf-8")
                     if s == '\r':
-                        self.formatDDOutput(line)
+                        # self.formatDDOutput(line)
+                        self.dd_prog_msg = line + "\n"
                         line = ''
                     else:
                         line = line + s
@@ -76,7 +77,7 @@ class ShellController:
     def PishrinkExec(self, command):
         try:
             process = subprocess.Popen(command, stderr=subprocess.PIPE)
-            self.status="pishrink"
+            self.status="pishrink Process"
             line = ''
             while True:
                 out = process.stderr.read(1)
@@ -104,17 +105,20 @@ class ShellController:
         for device in self.udev_context.list_devices():
             if(device.get('ID_USB_DRIVER') == "usb-storage" and device.get('DEVTYPE') == "disk"):
                 dev_name = device.get('DEVNAME')
-                devices[dev_name] = device
+                devices[dev_name] = {
+                                    "path":dev_name,
+                                    "model":device.get("ID_MODEL")
+                                    }
         return devices
 
     def MakeSDImage(self, sd_card, output, bs="1M"):
-        cmd = ["sudo", "dd", "if={}".format(sd_card), "of={}".format(output), "bs={}".format(bs), "status=progress"]
+        cmd = ["dd", "if={}".format(sd_card), "of={}".format(output), "bs={}".format(bs), "status=progress"]
         self.ddExec(cmd)
 
 
-    def PiShrink(self, file, zip=True, reset=True):
+    def PiShrink(self, file, tozip=True, reset=True):
         cmd = ['pishrink.sh']
-        if(zip):
+        if(tozip):
             cmd.append("-a")
             cmd.append("-z")
         if(reset):
@@ -124,25 +128,35 @@ class ShellController:
         cmd.append(file)
 
         for out in self.execute(cmd):
-            print("test", out, end="")
+            self.dd_prog_msg = out
+            print(out, end="")
+        self.dd_prog_msg = "image zipped"
 
-        # Thread(target=self.commandExec, args=(cmd,)).start()
-    
-    def mountMassStorage(self, device, location):
-        pass
-    
+    def ImageProcessor(self, sd_card, img_name, tozip=True, reset=True):
+        self.MakeSDImage(sd_card, self.local_dir+img_name)
+        self.status = "Pi shrink"
+        self.PiShrink(self.local_dir+img_name, tozip, reset)
+        self.status = "Image Ready"
+        self.dd_prog_msg = "process complete"
+        self.dd_prog_msg = ""
 
 if __name__ == "__main__":
     sc = ShellController()
+    Thread(target=sc.ImageProcessor, args=('/dev/sdg', "test.img")).start()
+    # sc.ImageProcessor('/dev/sdg', "test.img", zip=False)
+
+
+
+
     # 21404581888 bytes (21 GB, 20 GiB) copied, 726 s, 29.5 MB/s
     # sc.formatDDOutput("21404581888 bytes (21 GB, 20 GiB) copied, 726 s, 29.5 MB/s")
 
     # sc.MakeSDImage("/dev/sda", "python.img")
     # sc.MakeSDImage("/dev/sdg", sc.local_dir+"python.img")
 
-    sc.PiShrink(sc.local_dir+"python.img", zip=True)
+    # sc.PiShrink(sc.local_dir+"python.img", zip=True)
     
-    res = sc.USBDeviceList()
-    print(res.keys())
+    # res = sc.USBDeviceList()
+    # print(res.keys())
 
     # print(res['/dev/sda'].get('ID_MODEL'))
